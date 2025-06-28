@@ -4,6 +4,9 @@ import com.dineconnect.backend.dto.AuthRequest;
 import com.dineconnect.backend.security.service.JwtService;
 import com.dineconnect.backend.user.model.User;
 import com.dineconnect.backend.user.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Endpoints for user authentication")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -23,23 +27,28 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
+    @Operation(summary = "Register a new user", description = "Creates a new user and returns a JWT token")
     public String register(@RequestBody  AuthRequest authRequest) {
         User user = userService.createUser(authRequest.username(), authRequest.password(), false);
         return jwtService.generateToken(user.getUsername());
     }
 
-    @PostMapping("/register/admin")
-    public String registerAdmin(@RequestBody  AuthRequest authRequest) {
-        User user = userService.createUser(authRequest.username(), authRequest.password(), true);
-        return jwtService.generateToken(user.getUsername());
-    }
-
     @PostMapping("/login")
+    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
     public String login(@RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.username(), authRequest.password()));
         if(authentication.isAuthenticated())
             return  jwtService.generateToken(authRequest.username());
         throw new RuntimeException();
     }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset user password", description = "Resets the password for a user and returns a new JWT token")
+    public String resetPassword(@RequestBody AuthRequest authRequest) {
+        User user = userService.resetPassword(authRequest.username(), authRequest.password());
+        return jwtService.generateToken(user.getUsername());
+    }
+
+
 
 }

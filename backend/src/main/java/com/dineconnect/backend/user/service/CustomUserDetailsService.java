@@ -5,6 +5,7 @@ import com.dineconnect.backend.user.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -38,5 +39,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    public String getCurrentUsername() {
+        
+        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return switch (principal) {
+            case UserDetails user -> user.getUsername();
+            case String username -> username;
+            default -> principal.toString();
+        };
     }
 }

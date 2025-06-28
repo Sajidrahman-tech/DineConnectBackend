@@ -15,11 +15,9 @@ package com.dineconnect.backend.restaurant.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
 
 @Document
 @Data
@@ -33,7 +31,6 @@ public class Restaurant {
     private String cuisine;
     private String contactNumber;
     private String address;
-    private List<Review> reviews;
 
 }
 

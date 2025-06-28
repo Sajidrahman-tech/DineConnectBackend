@@ -2,21 +2,29 @@ package com.dineconnect.backend.restaurant.controller;
 
 
 import com.dineconnect.backend.dto.DineConnectResponse;
-import com.dineconnect.backend.restaurant.model.Restaurant;
 import com.dineconnect.backend.restaurant.service.RestaurantService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/restaurants")
 @RequiredArgsConstructor
+@Tag(name = "Restaurant", description = "Endpoints for managing restaurants")
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
 
     @GetMapping
+    @Operation(summary = "Get all restaurants", description = "Retrieves a list of all restaurants", security = @SecurityRequirement(name = "bearerAuth"))
+    @ResponseStatus(HttpStatus.OK)
     public DineConnectResponse getRestaurants() {
         return new DineConnectResponse(
                 "success",
@@ -25,13 +33,14 @@ public class RestaurantController {
         );
     }
 
-    @PostMapping("/admin/create")
-    public DineConnectResponse addRestaurant(@RequestBody Restaurant restaurant) {
+    @GetMapping("/{id}")
+    @Operation(summary = "Get restaurant by ID", description = "Retrieves a restaurant by its ID", security = @SecurityRequirement(name = "bearerAuth"))
+    @ResponseStatus(HttpStatus.OK)
+    public DineConnectResponse getRestaurantById(@PathVariable String id) {
         return new DineConnectResponse(
                 "success",
-                "Restaurant added successfully",
-                restaurantService.createRestaurant(restaurant)
-        );
+                "Restaurant retrieved successfully",
+                restaurantService.getRestaurantById(id));
     }
 
 

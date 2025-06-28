@@ -1,5 +1,6 @@
 package com.dineconnect.backend.security.filter;
 
+import com.dineconnect.backend.exception.util.ErrorResponseWriter;
 import com.dineconnect.backend.security.service.JwtService;
 import com.dineconnect.backend.user.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
@@ -48,6 +49,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+            else if (jwtService.isTokenExpired(jwt)) {
+                ErrorResponseWriter.write(response, HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
+                return;
             }
         }
 

@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.dineconnect.backend.restaurant.exception.RestaurantAlreadyExistsException;
 import com.dineconnect.backend.restaurant.exception.RestaurantNotFoundException;
 
 import java.util.HashMap;
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    public ResponseEntity<Map<String,String>> handleRestaurantAlreadyExistsException(RestaurantAlreadyExistsException ex){
+        var error = new HashMap<String, String>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
 

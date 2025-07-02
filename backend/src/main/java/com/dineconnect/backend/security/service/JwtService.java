@@ -44,14 +44,17 @@ public class JwtService {
 
 
     public boolean isTokenValid(String jwt, String username) {
+        return extractUsername(jwt).equals(username) && !isTokenExpired(jwt);
+    }
 
-        return extractUsername(jwt).equals(username) && Jwts
+    public boolean isTokenExpired(String jwt) {
+
+        return Jwts
                 .parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(jwt)
-                .getBody().getExpiration().after(new Date());
+                .getBody().getExpiration().before(new Date());
+
     }
-
-
 }

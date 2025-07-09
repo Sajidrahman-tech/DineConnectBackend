@@ -1,7 +1,10 @@
 package com.dineconnect.backend.security.config;
 
-import com.dineconnect.backend.security.filter.JwtFilter;
-import lombok.RequiredArgsConstructor;
+import java.nio.charset.StandardCharsets;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,17 +17,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-
+import com.dineconnect.backend.security.filter.JwtFilter;
 import com.dineconnect.backend.security.handler.JwtAccessDeniedHandler;
 import com.dineconnect.backend.security.handler.JwtAuthenticationEntryPoint;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity

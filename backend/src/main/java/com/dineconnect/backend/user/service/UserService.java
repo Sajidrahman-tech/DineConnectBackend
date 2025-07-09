@@ -1,5 +1,6 @@
 package com.dineconnect.backend.user.service;
 
+import com.dineconnect.backend.user.exception.UserAlreadyExistsException;
 import com.dineconnect.backend.user.model.Role;
 import com.dineconnect.backend.user.model.User;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class UserService {
     //Create a new user
     public User createUser(String username, String password, Boolean isAdmin) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
         return userRepository.save(
                 User.builder()

@@ -2,6 +2,7 @@ package com.dineconnect.backend.restaurant.service;
 
 import com.dineconnect.backend.restaurant.dto.RestaurantRequest;
 import com.dineconnect.backend.restaurant.dto.RestaurantResponse;
+import com.dineconnect.backend.restaurant.dto.RestaurantResponseWithoutHref;
 import com.dineconnect.backend.restaurant.dto.RestaurantResponse.RestaurantResponseBuilder;
 import com.dineconnect.backend.restaurant.exception.RestaurantAlreadyExistsException;
 import com.dineconnect.backend.restaurant.exception.RestaurantNotFoundException;
@@ -20,9 +21,10 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final ReviewService reviewService;
+    private final RestaurantServiceUtil restaurantServiceUtil;
 
     public Restaurant createRestaurant(RestaurantRequest restaurant) {
-        if(checkIfRestaurantExists(restaurant.name(), restaurant.address())){
+        if(restaurantServiceUtil.checkIfRestaurantExists(restaurant.name(), restaurant.address())){
             throw new RestaurantAlreadyExistsException(
                 String.format("Restaurant with name: %s and address: %s , already exists.", 
                 restaurant.name(), restaurant.address())
@@ -33,26 +35,44 @@ public class RestaurantService {
     }
 
     public List<RestaurantResponse> getAllRestaurants(){
+        
         return restaurantRepository.findAll()
-        .stream()
-        .map(restaurant -> buildRestaurantResponse(restaurant, reviewService.getOverallReview(restaurant.getId())))
-        .toList();
+            .stream()
+            .map(restaurant -> 
+                            restaurantResponseBuilder(
+                                restaurant, 
+                                reviewService.getOverallReview(restaurant.getId())
+                            )
+                            .href("/api/restaurant/"+ restaurant.getId())
+                            .build()
+                        )
+            .toList();
     }
 
-    public RestaurantResponse getRestaurantById(String id) {
-        RestaurantResponse restaurantResponse =  buildRestaurantResponse(restaurantRepository.findById(id)
+    public RestaurantResponseWithoutHref getRestaurantById(String id) {
+        Restaurant restaurant = restaurantRepository.findById(id)
             .orElseThrow(() -> 
-                new RestaurantNotFoundException("Restaurant not found with id: " + id)
-                ),reviewService.getOverallReview(id));
-        return restaurantResponse; 
+                new RestaurantNotFoundException("Restaurant not found with id: " + id));
+
+        
+        
+        return new RestaurantResponseWithoutHref(
+            restaurant.getId(),
+            restaurant.getName(), 
+            restaurant.getDescription(), 
+            restaurant.getCuisine(), 
+            restaurant.getContactNumber(), 
+            restaurant.getAddress(), 
+            reviewService.getOverallReview(id)
+        ); 
     }
 
     public void deleteRestaurant(String id) {
-        checkIfRestaurantExists(id);
+        restaurantServiceUtil.checkIfRestaurantExists(id);
         restaurantRepository.deleteById(id);
     }
     public Restaurant updateRestaurant(String id, RestaurantRequest restaurantRequest){
-        checkIfRestaurantExists(id);
+        restaurantServiceUtil.checkIfRestaurantExists(id);
         Restaurant restaurant = buildRestaurant(restaurantRequest);
         Restaurant existingRestaurant = restaurantRepository.findById(id).get();
         existingRestaurant.setAddress(restaurant.getAddress());
@@ -63,15 +83,7 @@ public class RestaurantService {
         return restaurantRepository.save(existingRestaurant);
     }
 
-    public void checkIfRestaurantExists(String id){
-        if (!restaurantRepository.existsById(id)) {
-            throw new RestaurantNotFoundException("Restaurant not found with id: " + id);
-        }
-    }
-
-    public boolean checkIfRestaurantExists(String name, String address){
-        return restaurantRepository.findByNameAndAddress(name,address).isPresent();
-    }
+    
 
     public Restaurant buildRestaurant(RestaurantRequest restaurantRequest){
         return Restaurant.builder()
@@ -84,18 +96,14 @@ public class RestaurantService {
         .build();
     }
 
-    public RestaurantResponse buildRestaurantResponse(Restaurant restaurant){
-        return buildRestaurantResponseBuilder(restaurant).build();
+    public RestaurantResponseBuilder restaurantResponseBuilder(Restaurant restaurant, OverallReview overallReview){
+        return restaurantResponseBuilder(restaurant)
+        .overallReview(overallReview);
     }
 
-    public RestaurantResponse buildRestaurantResponse(Restaurant restaurant, OverallReview overallReview){
-        return buildRestaurantResponseBuilder(restaurant)
-        .overallReview(overallReview)
-        .build();
-    }
-
-    public RestaurantResponseBuilder buildRestaurantResponseBuilder(Restaurant restaurant){
+    public RestaurantResponseBuilder restaurantResponseBuilder(Restaurant restaurant){
         return RestaurantResponse.builder()
+        .id(restaurant.getId())
         .name(restaurant.getName())
         .description(restaurant.getDescription())
         .cuisine(restaurant.getCuisine())

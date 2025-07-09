@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.dineconnect.backend.review.dto.ReviewRequest;
+import com.dineconnect.backend.restaurant.service.RestaurantServiceUtil;
+import com.dineconnect.backend.review.dto.*;
 import com.dineconnect.backend.review.model.OverallReview;
 import com.dineconnect.backend.review.model.Review;
 import com.dineconnect.backend.review.repository.ReviewRepository;
@@ -19,15 +20,21 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final CustomUserDetailsService userDetailsService;
+    private final RestaurantServiceUtil restaurantServiceUtil;
 
-    public List<Review> getReviewsByRestaurantId(String restaurantId) {
-        // Logic to fetch reviews by restaurant ID
+    public List<ReviewResponse> getReviewsByRestaurantId(String restaurantId) {
+        restaurantServiceUtil.checkIfRestaurantExists(restaurantId);
         return reviewRepository.findByRestaurantId(restaurantId)
-                .orElseThrow(() -> new RuntimeException("No reviews found for restaurant with ID: " + restaurantId));
+                .orElseThrow(() -> new RuntimeException("No reviews found for restaurant with ID: " + restaurantId))
+                .stream()
+                .map(review -> ReviewResponse.buildReviewResponse(review))
+                .toList();
     }
 
-    public Review addReview(String restaurantId, ReviewRequest review) {
-        return reviewRepository.save(convertToReview(restaurantId, review));
+    public ReviewResponse addReview(String restaurantId, ReviewRequest review) {
+        restaurantServiceUtil.checkIfRestaurantExists(restaurantId);
+        Review savedReview =  reviewRepository.save(convertToReview(restaurantId, review));
+        return ReviewResponse.buildReviewResponse(savedReview);
     }
 
     public Review convertToReview(String restaurantId, ReviewRequest reviewRequest) {
@@ -50,7 +57,7 @@ public class ReviewService {
                 .average()
                 .orElse(0.0);
 
-        return new OverallReview(overallRating, "/api/reviews/" + restaurantId);
+        return new OverallReview(overallRating, String.format("/api/restaurants/%s/reviews",restaurantId));
     }
 
     

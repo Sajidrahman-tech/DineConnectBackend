@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.dineconnect.backend.booking.dto.BookingRequest;
 import com.dineconnect.backend.booking.dto.BookingResponse;
+import com.dineconnect.backend.booking.exception.BookingAlreadyCancelledException;
+import com.dineconnect.backend.booking.exception.BookingAlreadyExistsException;
+import com.dineconnect.backend.booking.exception.BookingNotFoundException;
 import com.dineconnect.backend.booking.model.Booking;
 import com.dineconnect.backend.booking.model.BookingStatus;
 import com.dineconnect.backend.booking.repository.BookingRepository;
@@ -32,6 +35,38 @@ public class BookingService {
                 .status(BookingStatus.CONFIRMED)
                 .build();
 
+        // Check if a cancelled booking already exists for the same slot
+        Booking existing = bookingRepository.findByUserIdAndRestaurantIdAndBookingDateAndBookingTimeAndStatus(
+            userId,
+            request.restaurantId(),
+            request.bookingDate(),
+            request.bookingTime(),
+            BookingStatus.CANCELLED
+        );
+
+        if (existing != null) {
+            // Reactivate the cancelled booking
+            existing.setStatus(BookingStatus.CONFIRMED);
+            existing.setNumberOfGuests(request.numberOfGuests());
+            Booking reactivated = bookingRepository.save(existing);
+
+            String restaurantName = restaurantService.getRestaurantById(request.restaurantId()).name();
+            return mapToResponse(reactivated, restaurantName);
+        }
+
+        boolean confirmedBookingExists = bookingRepository.existsByUserIdAndRestaurantIdAndBookingDateAndBookingTimeAndStatus(
+            userId,
+            request.restaurantId(),
+            request.bookingDate(),
+            request.bookingTime(),
+            BookingStatus.CONFIRMED
+        );
+            
+        if (confirmedBookingExists) {
+            throw new BookingAlreadyExistsException("You already have a confirmed booking at this time.");
+        }
+            
+        
         booking = bookingRepository.save(booking);
         String restaurantName = restaurantService.getRestaurantById(request.restaurantId()).name();
 
@@ -39,26 +74,31 @@ public class BookingService {
     }
 
     public List<BookingResponse> getUserBookings(String userId) {
-        return bookingRepository.findByUserId(userId)
-                .stream()
+        List<Booking> bookings = bookingRepository.findByUserId(userId);
+        
+        if (bookings.isEmpty()) {
+            throw new BookingNotFoundException("No bookings found for user: " + userId);
+        }
+    
+        return bookings.stream()
                 .map(b -> mapToResponse(b, ""))
                 .collect(Collectors.toList());
     }
 
     public void cancelBooking(String bookingId, String userId) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking with ID " + bookingId + " not found"));
+        
         if (!booking.getUserId().equals(userId)) {
             throw new SecurityException("Unauthorized to cancel this booking");
         }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BookingAlreadyCancelledException("This booking has already been cancelled.");
+        }
+
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
-    }
-
-    public List<BookingResponse> getRestaurantBookings(String restaurantId) {
-        return bookingRepository.findByRestaurantId(restaurantId)
-                .stream()
-                .map(b -> mapToResponse(b, ""))
-                .collect(Collectors.toList());
     }
 
     private BookingResponse mapToResponse(Booking booking, String restaurantName) {
@@ -73,6 +113,12 @@ public class BookingService {
                 .build();
     }
 
+    public List<BookingResponse> getRestaurantBookings(String restaurantId, LocalDate date) {
+        return date != null
+                ? getBookingsByRestaurantAndDate(restaurantId, date)
+                : getBookingsByRestaurant(restaurantId);
+    }
+    
     public List<BookingResponse> getBookingsByRestaurant(String restaurantId) {
         return bookingRepository.findByRestaurantIdOrderByBookingDateDesc(restaurantId)
                 .stream()

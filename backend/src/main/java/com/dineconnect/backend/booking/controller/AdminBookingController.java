@@ -33,9 +33,7 @@ public class AdminBookingController {
             @PathVariable String restaurantId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        List<BookingResponse> bookings = date != null
-                ? bookingService.getBookingsByRestaurantAndDate(restaurantId, date)
-                : bookingService.getBookingsByRestaurant(restaurantId);
+        List<BookingResponse> bookings = bookingService.getRestaurantBookings(restaurantId, date);
 
         return new DineConnectResponse("success", "Bookings fetched", bookings);
     }

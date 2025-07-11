@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.dineconnect.backend.restaurant.exception.RestaurantAlreadyExistsException;
 import com.dineconnect.backend.restaurant.exception.RestaurantNotFoundException;
 import com.dineconnect.backend.user.exception.UserAlreadyExistsException;
+import com.dineconnect.backend.booking.exception.BookingNotFoundException;
+import com.dineconnect.backend.booking.exception.BookingAlreadyExistsException;
+import com.dineconnect.backend.booking.exception.BookingAlreadyCancelledException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,4 +63,26 @@ public class GlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleBookingNotFoundException(BookingNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(BookingAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleBookingAlreadyExists(BookingAlreadyExistsException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(BookingAlreadyCancelledException.class)
+    public ResponseEntity<Map<String, String>> handleBookingAlreadyCancelled(BookingAlreadyCancelledException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
 }

@@ -15,6 +15,7 @@ import com.dineconnect.backend.booking.model.Booking;
 import com.dineconnect.backend.booking.model.BookingStatus;
 import com.dineconnect.backend.booking.repository.BookingRepository;
 import com.dineconnect.backend.restaurant.service.RestaurantService;
+import com.dineconnect.backend.restaurant.service.RestaurantServiceUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +25,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final RestaurantService restaurantService;
+    private final RestaurantServiceUtil restaurantServiceUtil;
 
     public BookingResponse createBooking(String userId, BookingRequest request) {
         Booking booking = Booking.builder()
@@ -120,11 +122,13 @@ public class BookingService {
     }
     
     public List<BookingResponse> getBookingsByRestaurant(String restaurantId) {
+        restaurantServiceUtil.checkIfRestaurantExists(restaurantId);
         return bookingRepository.findByRestaurantIdOrderByBookingDateDesc(restaurantId)
                 .stream()
                 .map(b -> mapToResponse(b, ""))
                 .toList();
     }
+
     
     public List<BookingResponse> getBookingsByRestaurantAndDate(String restaurantId, LocalDate date) {
         return bookingRepository.findByRestaurantIdAndBookingDateOrderByBookingTimeAsc(restaurantId, date)

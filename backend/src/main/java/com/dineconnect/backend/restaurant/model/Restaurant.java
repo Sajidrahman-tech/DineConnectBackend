@@ -16,6 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -35,5 +38,9 @@ public class Restaurant {
     private String contactNumber;
     private String address;
 
+    //filter by price range, type, and keywords
+    private int priceRange;
+    private String type;
+    private List<String> keywords;
 }
 

@@ -1,5 +1,6 @@
 package com.dineconnect.backend.restaurant.service;
 
+import com.dineconnect.backend.restaurant.dto.FilterRequest;
 import com.dineconnect.backend.restaurant.dto.RestaurantRequest;
 import com.dineconnect.backend.restaurant.dto.RestaurantResponse;
 import com.dineconnect.backend.restaurant.dto.RestaurantResponseWithoutHref;
@@ -62,7 +63,10 @@ public class RestaurantService {
             restaurant.getDescription(), 
             restaurant.getCuisine(), 
             restaurant.getContactNumber(), 
-            restaurant.getAddress(), 
+            restaurant.getAddress(),
+            restaurant.getPriceRange(),
+            restaurant.getType(),
+            restaurant.getKeywords(), 
             reviewService.getOverallReview(id)
         ); 
     }
@@ -93,6 +97,9 @@ public class RestaurantService {
         .cuisine(restaurantRequest.cuisine())
         .contactNumber(restaurantRequest.contactNumber())
         .address(restaurantRequest.address())
+        .priceRange(restaurantRequest.priceRange())
+        .type(restaurantRequest.type())
+        .keywords(restaurantRequest.keywords())
         .build();
     }
 
@@ -108,9 +115,39 @@ public class RestaurantService {
         .description(restaurant.getDescription())
         .cuisine(restaurant.getCuisine())
         .contactNumber(restaurant.getContactNumber())
-        .address(restaurant.getAddress());
+        .address(restaurant.getAddress())
+        .priceRange(restaurant.getPriceRange())
+        .type(restaurant.getType())
+        .keywords(restaurant.getKeywords());
     }
 
+    public List<RestaurantResponse> filterRestaurants(FilterRequest filter) {
+        List<Restaurant> restaurants;
 
+        boolean hasCuisine = !filter.cuisines().isEmpty();
+        boolean hasType = !filter.types().isEmpty();
+        boolean hasKeywords = !filter.keywords().isEmpty();
+        boolean hasAnyFilter = hasCuisine || hasType || hasKeywords || filter.priceRange() < 100;
+
+        if (!hasAnyFilter) {
+            // No filters at all, return everything
+            restaurants = restaurantRepository.findAll();
+        } else {
+            // Apply partial filter
+            restaurants = restaurantRepository.findAll().stream()
+                .filter(r -> !hasCuisine || filter.cuisines().contains(r.getCuisine()))
+                .filter(r -> !hasType || filter.types().contains(r.getType()))
+                .filter(r -> r.getPriceRange() <= filter.priceRange())
+                .filter(r -> !hasKeywords || r.getKeywords().stream().anyMatch(filter.keywords()::contains))
+                .toList();
+        }
+
+        return restaurants.stream()
+            .map(r -> restaurantResponseBuilder(r, reviewService.getOverallReview(r.getId()))
+                .href("/api/restaurant/" + r.getId())
+                .build()
+            )
+            .toList();
+    }
 
 }

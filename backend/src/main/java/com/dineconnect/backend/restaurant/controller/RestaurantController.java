@@ -2,6 +2,7 @@ package com.dineconnect.backend.restaurant.controller;
 
 
 import com.dineconnect.backend.dto.DineConnectResponse;
+import com.dineconnect.backend.restaurant.dto.FilterRequest;
 import com.dineconnect.backend.restaurant.service.RestaurantService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,5 +44,21 @@ public class RestaurantController {
                 restaurantService.getRestaurantById(id));
     }
 
+    //restaurant search filter
+    @PostMapping("/filter")
+    @Operation(
+        summary = "Filter restaurants",
+        description = "Filters restaurants based on cuisine, type, price range, and keywords",
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ResponseStatus(HttpStatus.OK)
+    public DineConnectResponse filterRestaurants(@RequestBody FilterRequest filter) {
+        return new DineConnectResponse(
+                "success",
+                "Filtered restaurants retrieved successfully",
+                restaurantService.filterRestaurants(filter)
+        );
+
+    }
 
 }

@@ -2,6 +2,7 @@ package com.dineconnect.backend.security.filter;
 
 import com.dineconnect.backend.exception.util.ErrorResponseWriter;
 import com.dineconnect.backend.security.service.JwtService;
+import com.dineconnect.backend.user.model.User;
 import com.dineconnect.backend.user.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,13 +34,13 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         final String jwt = authHeader.substring(7); // Remove "Bearer "
-        final String username = jwtService.extractUsername(jwt);
+        final String email = jwtService.extractEmail(jwt);
 
         // If not already authenticated
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            User userDetails = (User) userDetailsService.loadUserByUsername(email);
 
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+            if (jwtService.isTokenValid(jwt, userDetails.getEmail())) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -54,6 +54,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 ErrorResponseWriter.write(response, HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
                 return;
             }
+        }
+        else{
+
         }
 
         filterChain.doFilter(request, response);

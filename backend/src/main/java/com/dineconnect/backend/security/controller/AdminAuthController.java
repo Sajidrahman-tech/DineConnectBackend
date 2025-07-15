@@ -30,7 +30,7 @@ public class AdminAuthController {
     @Operation(summary = "Register a new admin", description = "Creates a new admin user and returns a JWT token")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse registerAdmin(@RequestBody  AuthRequest authRequest) {
-        User user = userService.createUser(authRequest.username(), authRequest.password(), true);
+        User user = userService.createUser(authRequest.email(), authRequest.username(), authRequest.password(), true);
         return new AuthResponse(jwtService.generateToken(user.getUsername()));
     }
 }

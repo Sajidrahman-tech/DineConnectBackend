@@ -34,17 +34,17 @@ public class AuthController {
     @Operation(summary = "Register a new user", description = "Creates a new user and returns a JWT token")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@RequestBody  AuthRequest authRequest) {
-        User user = userService.createUser(authRequest.username(), authRequest.password(), false);
-        return new AuthResponse(jwtService.generateToken(user.getUsername()));
+        User user = userService.createUser(authRequest.email(), authRequest.username(), authRequest.password(), false);
+        return new AuthResponse(jwtService.generateToken(user.getEmail()));
     }
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse login(@RequestBody AuthRequest authRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.username(), authRequest.password()));
+    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.email(), authRequest.password()));
         if(authentication.isAuthenticated())
-            return  new AuthResponse(jwtService.generateToken(authRequest.username()));
+            return  new AuthResponse(jwtService.generateToken(authRequest.email()));
         throw new RuntimeException();
     }
 
@@ -52,8 +52,20 @@ public class AuthController {
     @Operation(summary = "Reset user password", description = "Resets the password for a user and returns a new JWT token")
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse resetPassword(@RequestBody AuthRequest authRequest) {
-        User user = userService.resetPassword(authRequest.username(), authRequest.password());
-        return new AuthResponse(jwtService.generateToken(user.getUsername()));
+        User user = userService.resetPassword(authRequest.email(), authRequest.password());
+        return new AuthResponse(jwtService.generateToken(user.getEmail()));
+    }
+
+
+
+    /////////
+    @PostMapping("/logout")
+    @Operation(summary = "User logout", description = "remove(Logout) a JWT token")
+    @ResponseStatus(HttpStatus.OK)
+    public AuthResponse  logout() {
+
+            jwtService.logout();
+            return new AuthResponse("Logout successful");
     }
 
 

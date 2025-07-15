@@ -60,11 +60,4 @@ public class JwtService {
                 .getBody().getExpiration().before(new Date());
 
     }
-
-
-
-    public void logout(){
-        SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
-        SecurityContextHolder.clearContext();
-    }
 }

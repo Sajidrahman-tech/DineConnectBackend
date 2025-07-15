@@ -56,18 +56,4 @@ public class AuthController {
         return new AuthResponse(jwtService.generateToken(user.getEmail()));
     }
 
-
-
-    /////////
-    @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "remove(Logout) a JWT token")
-    @ResponseStatus(HttpStatus.OK)
-    public AuthResponse  logout() {
-
-            jwtService.logout();
-            return new AuthResponse("Logout successful");
-    }
-
-
-
 }

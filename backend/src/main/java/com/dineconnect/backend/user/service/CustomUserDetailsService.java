@@ -25,20 +25,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Value("${admin.username}")
     private String adminUsername;
+    @Value("${admin.email}")
+    private String adminEmail;
     @Value("${admin.password}")
     private String adminPassword;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (Objects.equals(username, adminUsername)){
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        if (Objects.equals(email, adminEmail)){
             return new org.springframework.security.core.userdetails.User(
-                    username,
+                    email,
                     passwordEncoder.encode(adminPassword),
                     Collections.singleton(Role.ADMIN.getAuthority())
             );
         }
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
     }
 
     public String getCurrentUsername() {

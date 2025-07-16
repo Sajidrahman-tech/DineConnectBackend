@@ -16,12 +16,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     //Create a new user
-    public User createUser(String username, String password, Boolean isAdmin) {
-        if (userRepository.findByUsername(username).isPresent()) {
+    public User createUser(String email,String username, String password, Boolean isAdmin) {
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new UserAlreadyExistsException("User already exists");
         }
         return userRepository.save(
                 User.builder()
+                        .email(email)
                         .username(username)
                         .password(passwordEncoder.encode(password))
                         .role(isAdmin? Role.ADMIN : Role.USER)
@@ -30,8 +31,8 @@ public class UserService {
     }
 
     //Reset password for an existing user
-    public User resetPassword(String username, String newPassword) {
-        User user = userRepository.findByUsername(username)
+    public User resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setPassword(passwordEncoder.encode(newPassword));
         return userRepository.save(user);

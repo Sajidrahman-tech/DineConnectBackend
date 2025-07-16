@@ -21,3 +21,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 #Docker run command
 # docker run -d -p 8080:8080 --name my-backend-app --env-file .env  dineconnect-backend
+
+#Manual Deployment DockerHub
+#docker build --platform linux/amd64 -t 9626492176/dineconnect-backend:latest .
+#docker push 9626492176/dineconnect-backend:latest

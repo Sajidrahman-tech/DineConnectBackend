@@ -30,3 +30,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: 9626492176/dineconnect-backend:latest
+          
+      - name: Trigger deploy on Render
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+

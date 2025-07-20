@@ -5,6 +5,17 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record RestaurantResponseWithoutHref(String id, String name, String description, String cuisine, String contactNumber, String address, int priceRange, String type, List<String> keywords, OverallReview overallReview ) {
-    
-}
+public record RestaurantResponseWithoutHref(
+        String id,
+        String name,
+        String description,
+        String cuisine,
+        String contactNumber,
+        String address,
+        int priceRange,
+        String type,
+        List<String> keywords,
+        OverallReview overallReview,
+        List<String> imageUrls,
+        Double reservationCharge
+) {}

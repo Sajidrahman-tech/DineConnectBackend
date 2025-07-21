@@ -42,5 +42,7 @@ public class Restaurant {
     private int priceRange;
     private String type;
     private List<String> keywords;
+    private List<String> imageUrls;
+    private Double reservationCharge;
 }
 

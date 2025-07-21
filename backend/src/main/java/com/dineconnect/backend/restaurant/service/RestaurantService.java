@@ -67,7 +67,9 @@ public class RestaurantService {
             restaurant.getPriceRange(),
             restaurant.getType(),
             restaurant.getKeywords(), 
-            reviewService.getOverallReview(id)
+            reviewService.getOverallReview(id),
+            restaurant.getImageUrls(),
+            restaurant.getReservationCharge()
         ); 
     }
 
@@ -78,12 +80,15 @@ public class RestaurantService {
     public Restaurant updateRestaurant(String id, RestaurantRequest restaurantRequest){
         restaurantServiceUtil.checkIfRestaurantExists(id);
         Restaurant restaurant = buildRestaurant(restaurantRequest);
-        Restaurant existingRestaurant = restaurantRepository.findById(id).get();
+        Restaurant existingRestaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found with id: " + id));
         existingRestaurant.setAddress(restaurant.getAddress());
         existingRestaurant.setContactNumber(restaurant.getContactNumber());
         existingRestaurant.setCuisine(restaurant.getCuisine());
         existingRestaurant.setDescription(restaurant.getDescription());
         existingRestaurant.setName(restaurant.getName());
+        existingRestaurant.setImageUrls(restaurant.getImageUrls());
+        existingRestaurant.setReservationCharge(restaurant.getReservationCharge());
         return restaurantRepository.save(existingRestaurant);
     }
 
@@ -100,6 +105,8 @@ public class RestaurantService {
         .priceRange(restaurantRequest.priceRange())
         .type(restaurantRequest.type())
         .keywords(restaurantRequest.keywords())
+        .imageUrls(restaurantRequest.imageUrls())
+        .reservationCharge(restaurantRequest.reservationCharge())
         .build();
     }
 
@@ -118,7 +125,9 @@ public class RestaurantService {
         .address(restaurant.getAddress())
         .priceRange(restaurant.getPriceRange())
         .type(restaurant.getType())
-        .keywords(restaurant.getKeywords());
+        .keywords(restaurant.getKeywords())
+        .imageUrls(restaurant.getImageUrls())
+        .reservationCharge(restaurant.getReservationCharge());
     }
 
     public List<RestaurantResponse> filterRestaurants(FilterRequest filter) {

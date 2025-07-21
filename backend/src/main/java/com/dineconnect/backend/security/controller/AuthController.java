@@ -1,5 +1,6 @@
 package com.dineconnect.backend.security.controller;
 
+import com.dineconnect.backend.dto.AuthLoginRequest;
 import com.dineconnect.backend.dto.AuthRequest;
 import com.dineconnect.backend.dto.AuthResponse;
 import com.dineconnect.backend.security.service.JwtService;
@@ -41,10 +42,10 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse login(@RequestBody AuthRequest authRequest) {
-    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.email(), authRequest.password()));
+    public AuthResponse login(@RequestBody AuthLoginRequest authLoginRequest) {
+    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authLoginRequest.email(), authLoginRequest.password()));
         if(authentication.isAuthenticated())
-            return  new AuthResponse(jwtService.generateToken(authRequest.email()));
+            return  new AuthResponse(jwtService.generateToken(authLoginRequest.email()));
         throw new RuntimeException();
     }
 

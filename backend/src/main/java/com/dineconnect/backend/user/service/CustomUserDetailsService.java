@@ -1,6 +1,7 @@
 package com.dineconnect.backend.user.service;
 
 import com.dineconnect.backend.user.model.Role;
+import com.dineconnect.backend.user.model.User;
 import com.dineconnect.backend.user.respository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -46,14 +47,17 @@ public class CustomUserDetailsService implements UserDetailsService {
     public String getCurrentUsername() {
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return switch (principal) {
-            case UserDetails user -> {
+            case User user -> {
                 if( user.getUsername().equals(adminEmail)) {
                     yield adminUsername;
                 }
-                yield userRepository.findByEmail(
-                        user.getUsername()).orElseThrow(
-                                () -> new UsernameNotFoundException("User not found with email: " + user.getUsername()))
-                        .getUsername();
+                yield user.getUsername();
+            }
+            case UserDetails userDetails -> {
+                if( userDetails.getUsername().equals(adminEmail)) {
+                    yield adminUsername;
+                }
+                yield userDetails.getUsername();
             }
             case String username -> username;
             default -> principal.toString();

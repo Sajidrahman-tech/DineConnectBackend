@@ -89,6 +89,9 @@ public class RestaurantService {
         existingRestaurant.setName(restaurant.getName());
         existingRestaurant.setImageUrls(restaurant.getImageUrls());
         existingRestaurant.setReservationCharge(restaurant.getReservationCharge());
+        existingRestaurant.setKeywords(restaurant.getKeywords());
+        existingRestaurant.setPriceRange(restaurant.getPriceRange());
+        existingRestaurant.setType(restaurant.getType());
         return restaurantRepository.save(existingRestaurant);
     }
 

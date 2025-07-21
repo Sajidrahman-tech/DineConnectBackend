@@ -44,11 +44,17 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     public String getCurrentUsername() {
-        
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         return switch (principal) {
-            case UserDetails user -> user.getUsername();
+            case UserDetails user -> {
+                if( user.getUsername().equals(adminEmail)) {
+                    yield adminUsername;
+                }
+                yield userRepository.findByEmail(
+                        user.getUsername()).orElseThrow(
+                                () -> new UsernameNotFoundException("User not found with email: " + user.getUsername()))
+                        .getUsername();
+            }
             case String username -> username;
             default -> principal.toString();
         };

@@ -27,7 +27,7 @@ public class ReviewService {
         return reviewRepository.findByRestaurantId(restaurantId)
                 .orElseThrow(() -> new RuntimeException("No reviews found for restaurant with ID: " + restaurantId))
                 .stream()
-                .map(review -> ReviewResponse.buildReviewResponse(review))
+                .map(ReviewResponse::buildReviewResponse)
                 .toList();
     }
 
@@ -41,7 +41,8 @@ public class ReviewService {
 
         return Review.builder()
                 .restaurantId(restaurantId)
-                .comment(reviewRequest.comment())
+                .title(reviewRequest.title())
+                .content(reviewRequest.content())
                 .rating(reviewRequest.rating())
                 .reviewerName(userDetailsService.getCurrentUsername())
                 .reviewedAt(java.time.LocalDateTime.now())

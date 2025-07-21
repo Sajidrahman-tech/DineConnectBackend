@@ -21,7 +21,8 @@ public class Review {
     private String id;
     private String restaurantId;
     private String reviewerName;
-    private String comment;
+    private String title;
+    private String content;
     private Double rating;
     private LocalDateTime reviewedAt;
 }

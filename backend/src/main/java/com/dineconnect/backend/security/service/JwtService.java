@@ -29,8 +29,8 @@ public class JwtService {
         return Jwts
                 .builder()
                 .setSubject(email)
+                .addClaims(Map.of("role", isAdmin ? Role.ADMIN.name() : Role.USER.name()))
                 .setIssuedAt(new Date())
-                .setClaims(Map.of("role", isAdmin ? Role.ADMIN : Role.USER))
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
                 .signWith(secretKey)
                 .compact();

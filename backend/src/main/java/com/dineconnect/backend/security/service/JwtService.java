@@ -1,5 +1,6 @@
 package com.dineconnect.backend.security.service;
 
+import com.dineconnect.backend.user.model.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 
 @Service
 public class JwtService {
@@ -22,12 +24,13 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email, boolean isAdmin) {
 
         return Jwts
                 .builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
+                .setClaims(Map.of("role", isAdmin ? Role.ADMIN : Role.USER))
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
                 .signWith(secretKey)
                 .compact();

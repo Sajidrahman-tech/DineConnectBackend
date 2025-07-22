@@ -31,6 +31,6 @@ public class AdminAuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse registerAdmin(@RequestBody  AuthRequest authRequest) {
         User user = userService.createUser(authRequest.email(), authRequest.username(), authRequest.password(), true);
-        return new AuthResponse(jwtService.generateToken(user.getUsername()));
+        return new AuthResponse(jwtService.generateToken(user.getUsername(),true));
     }
 }

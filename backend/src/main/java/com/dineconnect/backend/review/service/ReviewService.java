@@ -9,7 +9,7 @@ import com.dineconnect.backend.review.dto.*;
 import com.dineconnect.backend.review.model.OverallReview;
 import com.dineconnect.backend.review.model.Review;
 import com.dineconnect.backend.review.repository.ReviewRepository;
-import com.dineconnect.backend.user.service.CustomUserDetailsService;
+import com.dineconnect.backend.user.service.CustomUserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsServiceImpl userDetailsService;
     private final RestaurantServiceUtil restaurantServiceUtil;
 
     public List<ReviewResponse> getReviewsByRestaurantId(String restaurantId) {

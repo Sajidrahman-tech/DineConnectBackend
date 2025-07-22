@@ -2,8 +2,8 @@ package com.dineconnect.backend.security.filter;
 
 import com.dineconnect.backend.exception.util.ErrorResponseWriter;
 import com.dineconnect.backend.security.service.JwtService;
-import com.dineconnect.backend.user.model.User;
-import com.dineconnect.backend.user.service.CustomUserDetailsService;
+import com.dineconnect.backend.user.model.CustomUserDetails;
+import com.dineconnect.backend.user.service.CustomUserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,7 +22,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -39,13 +38,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // If not already authenticated
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            CustomUserDetails customUserDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtService.isTokenValid(jwt, email)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        customUserDetails,
                         null,
-                        userDetails.getAuthorities()
+                        customUserDetails.getAuthorities()
                 );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

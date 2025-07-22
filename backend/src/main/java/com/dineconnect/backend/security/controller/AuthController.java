@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication", description = "Endpoints for user authentication")
@@ -36,7 +38,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@RequestBody  AuthRequest authRequest) {
         User user = userService.createUser(authRequest.email(), authRequest.username(), authRequest.password(), false);
-        return new AuthResponse(jwtService.generateToken(user.getEmail()));
+        return new AuthResponse(jwtService.generateToken(user.getEmail(), false));
     }
 
     @PostMapping("/login")
@@ -44,17 +46,20 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public AuthResponse login(@RequestBody AuthLoginRequest authLoginRequest) {
     Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authLoginRequest.email(), authLoginRequest.password()));
-        if(authentication.isAuthenticated())
-            return  new AuthResponse(jwtService.generateToken(authLoginRequest.email()));
+        if(authentication.isAuthenticated()){
+            User user = (User) authentication.getPrincipal();
+            return  new AuthResponse(jwtService.generateToken(authLoginRequest.email(), user.getRole().name().equals("ADMIN")));
+        }
+
         throw new RuntimeException();
     }
 
     @PostMapping("/reset-password")
     @Operation(summary = "Reset user password", description = "Resets the password for a user and returns a new JWT token")
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse resetPassword(@RequestBody AuthRequest authRequest) {
+    public Map<String, String> resetPassword(@RequestBody AuthRequest authRequest) {
         User user = userService.resetPassword(authRequest.email(), authRequest.password());
-        return new AuthResponse(jwtService.generateToken(user.getEmail()));
+        return Map.of("Response", "Password reset successful !!");
     }
 
 }

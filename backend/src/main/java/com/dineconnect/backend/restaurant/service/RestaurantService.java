@@ -12,6 +12,9 @@ import com.dineconnect.backend.restaurant.respository.RestaurantRepository;
 import com.dineconnect.backend.review.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.dineconnect.backend.review.model.OverallReview;
 import java.util.List;
@@ -35,6 +38,7 @@ public class RestaurantService {
         return restaurantRepository.save(buildRestaurant(restaurant));
     }
 
+    @Cacheable("restaurants")
     public List<RestaurantResponse> getAllRestaurants(){
         
         return restaurantRepository.findAll()
@@ -49,7 +53,7 @@ public class RestaurantService {
                         )
             .toList();
     }
-
+    @Cacheable(value = "restaurant", key = "#id")
     public RestaurantResponseWithoutHref getRestaurantById(String id) {
         Restaurant restaurant = restaurantRepository.findById(id)
             .orElseThrow(() -> 
@@ -72,11 +76,13 @@ public class RestaurantService {
             restaurant.getReservationCharge()
         ); 
     }
-
+    @CacheEvict(value = "restaurant", key= "#id")
     public void deleteRestaurant(String id) {
         restaurantServiceUtil.checkIfRestaurantExists(id);
         restaurantRepository.deleteById(id);
     }
+
+    @CachePut(value = "restaurant", key = "#id")
     public Restaurant updateRestaurant(String id, RestaurantRequest restaurantRequest){
         restaurantServiceUtil.checkIfRestaurantExists(id);
         Restaurant restaurant = buildRestaurant(restaurantRequest);

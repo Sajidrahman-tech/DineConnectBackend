@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.dineconnect.backend.booking.dto.BookingRequest;
@@ -75,6 +77,7 @@ public class BookingService {
         return mapToResponse(booking, restaurantName);
     }
 
+    @Cacheable(value = "userBookings", key = "#userId")
     public List<BookingResponse> getUserBookings(String userId) {
         List<Booking> bookings = bookingRepository.findByUserId(userId);
 
@@ -87,6 +90,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    @CachePut(value = "userBookings", key = "#userId")
     public void cancelBooking(String bookingId, String userId, Role userRole) {
 
         Booking booking = bookingRepository.findById(bookingId)
@@ -111,6 +115,7 @@ public class BookingService {
     }
 
 
+    @Cacheable(value = "restaurantBookings", key = "#restaurantId + #date")
     public List<BookingResponse> getRestaurantBookings(String restaurantId, LocalDate date) {
         return date != null
                 ? getBookingsByRestaurantAndDate(restaurantId, date)

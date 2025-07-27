@@ -1,12 +1,14 @@
 package com.dineconnect.backend.user.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.dineconnect.backend.user.exception.UserAlreadyExistsException;
 import com.dineconnect.backend.user.model.Role;
 import com.dineconnect.backend.user.model.User;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import com.dineconnect.backend.user.respository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +18,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     //Create a new user
-    public User createUser(String email,String username, String password, Boolean isAdmin) {
+    public User createUser(String email, String username, String password, Role role) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new UserAlreadyExistsException("User already exists");
         }
@@ -25,7 +27,7 @@ public class UserService {
                         .email(email)
                         .username(username)
                         .password(passwordEncoder.encode(password))
-                        .role(isAdmin? Role.ADMIN : Role.USER)
+                        .role(role)
                         .build()
         );
     }

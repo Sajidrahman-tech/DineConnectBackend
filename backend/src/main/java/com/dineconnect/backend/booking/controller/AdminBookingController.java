@@ -20,9 +20,9 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
-@RequestMapping("/api/admin/bookings")
+@RequestMapping("/api/owner/bookings")
 @RequiredArgsConstructor
-@Tag(name = "Admin Booking Management", description = "Admin endpoints for managing restaurant reviews")
+@Tag(name = "Owner Booking Management", description = "Owner endpoints for managing restaurant reviews")
 public class AdminBookingController {
 
     private final BookingService bookingService;

@@ -1,16 +1,18 @@
 package com.dineconnect.backend.security.service;
 
-import com.dineconnect.backend.user.model.Role;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.dineconnect.backend.user.model.Role;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
@@ -24,14 +26,21 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email, boolean isAdmin) {
-
-        return Jwts
-                .builder()
+    public String generateToken(String email, Role role, String restaurantId) {
+        Map<String, Object> claims = Map.of("role", role.name());
+    
+        if (role == Role.OWNER && restaurantId != null) {
+            claims = Map.of(
+                "role", role.name(),
+                "restaurantId", restaurantId
+            );
+        }
+    
+        return Jwts.builder()
                 .setSubject(email)
-                .addClaims(Map.of("role", isAdmin ? Role.ADMIN.name() : Role.USER.name()))
+                .addClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour
+                .setExpiration(new Date(System.currentTimeMillis() + 3600000))
                 .signWith(secretKey)
                 .compact();
     }

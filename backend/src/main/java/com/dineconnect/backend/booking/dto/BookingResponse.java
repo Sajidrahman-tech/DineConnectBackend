@@ -12,9 +12,9 @@ public record BookingResponse(
     String id,
     String restaurantId,
     String restaurantName,
+    String userId,
     LocalDate bookingDate,
     LocalTime bookingTime,
     int numberOfGuests,
     BookingStatus status
 ) {}
-

@@ -27,6 +27,7 @@ import com.dineconnect.backend.booking.dto.BookingRequest;
 import com.dineconnect.backend.booking.dto.BookingResponse;
 import com.dineconnect.backend.booking.model.BookingStatus;
 import com.dineconnect.backend.booking.service.BookingService;
+import com.dineconnect.backend.user.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -43,14 +44,14 @@ class BookingControllerTest {
     void setup() {
         MockitoAnnotations.openMocks(this);
         BookingController bookingController = new BookingController(bookingService);
-        
+
         // Configure MockMvc with proper argument resolvers for security
         mockMvc = MockMvcBuilders.standaloneSetup(bookingController)
                 .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
                 .build();
-        
+
         objectMapper.registerModule(new JavaTimeModule());
-        
+
         // Clear security context before each test
         SecurityContextHolder.clearContext();
     }
@@ -62,7 +63,7 @@ class BookingControllerTest {
                     .password("test")
                     .authorities("ROLE_USER")
                     .build();
-            
+
             TestingAuthenticationToken authentication = new TestingAuthenticationToken(userDetails, null, "ROLE_USER");
             authentication.setAuthenticated(true);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -123,7 +124,7 @@ class BookingControllerTest {
     void testCancelBooking() throws Exception {
         setAuthenticatedUser("john@example.com");
 
-        doNothing().when(bookingService).cancelBooking("bk001", "john@example.com");
+        doNothing().when(bookingService).cancelBooking("bk001", "john@example.com", Role.USER);
 
         mockMvc.perform(delete("/api/bookings/bk001"))
                 .andExpect(status().isOk())

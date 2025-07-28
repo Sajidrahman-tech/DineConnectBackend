@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +28,7 @@ import com.dineconnect.backend.booking.repository.BookingRepository;
 import com.dineconnect.backend.restaurant.dto.RestaurantResponseWithoutHref;
 import com.dineconnect.backend.restaurant.service.RestaurantService;
 import com.dineconnect.backend.restaurant.service.RestaurantServiceUtil;
+import com.dineconnect.backend.user.model.Role;
 
 class BookingServiceTest {
 
@@ -80,21 +82,20 @@ class BookingServiceTest {
             .thenReturn(cancelled);
         when(bookingRepository.save(any())).thenReturn(booking);
         when(restaurantService.getRestaurantById("rest123"))
-        .thenReturn(new RestaurantResponseWithoutHref(
-            "rest123",
-            "Testaurant",
-            "Test description",
-            "Indian",
-            "1234567890",
-            "123 Main St",
-            2,
-            "Fine Dining",
-            List.of("vegan", "family"),
-            null,
-            List.of("img1.jpg", "img2.jpg"),
-            5.0
+            .thenReturn(new RestaurantResponseWithoutHref(
+                "rest123",
+                "Testaurant",
+                "Test description",
+                "Indian",
+                "1234567890",
+                "123 Main St",
+                2,
+                "Fine Dining",
+                List.of("vegan", "family"),
+                null,
+                List.of("img1.jpg", "img2.jpg"),
+                5.0
         ));
-
 
         BookingResponse response = bookingService.createBooking("user1", request);
         assertThat(response.status()).isEqualTo(BookingStatus.CONFIRMED);
@@ -114,7 +115,7 @@ class BookingServiceTest {
         booking.setStatus(BookingStatus.CANCELLED);
         when(bookingRepository.findById("bk001")).thenReturn(Optional.of(booking));
 
-        assertThatThrownBy(() -> bookingService.cancelBooking("bk001", "user1"))
+        assertThatThrownBy(() -> bookingService.cancelBooking("bk001", "user1", Role.USER))
                 .isInstanceOf(BookingAlreadyCancelledException.class);
     }
 
@@ -123,7 +124,31 @@ class BookingServiceTest {
         booking.setUserId("user2");
         when(bookingRepository.findById("bk001")).thenReturn(Optional.of(booking));
 
-        assertThatThrownBy(() -> bookingService.cancelBooking("bk001", "user1"))
+        assertThatThrownBy(() -> bookingService.cancelBooking("bk001", "user1", Role.USER))
                 .isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void cancelBooking_shouldSucceedIfUserMatches() {
+        booking.setUserId("user1");
+        booking.setStatus(BookingStatus.CONFIRMED);
+        when(bookingRepository.findById("bk001")).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any())).thenReturn(booking);
+
+        bookingService.cancelBooking("bk001", "user1", Role.USER);
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    void cancelBooking_shouldSucceedIfOwner() {
+        booking.setUserId("anotherUser");
+        booking.setRestaurantId("rest123");
+        booking.setStatus(BookingStatus.CONFIRMED);
+
+        when(bookingRepository.findById("bk001")).thenReturn(Optional.of(booking));
+        when(bookingRepository.save(any())).thenReturn(booking);
+
+        bookingService.cancelBooking("bk001", "ownerUser", Role.OWNER);
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
     }
 }

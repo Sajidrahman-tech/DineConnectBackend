@@ -1,19 +1,19 @@
 package com.dineconnect.backend.user.service;
 
-import com.dineconnect.backend.user.model.CustomUserDetails;
-import com.dineconnect.backend.user.model.Role;
-import com.dineconnect.backend.user.model.User;
-import com.dineconnect.backend.user.respository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import com.dineconnect.backend.user.model.CustomUserDetails;
+import com.dineconnect.backend.user.model.Role;
+import com.dineconnect.backend.user.model.User;
+import com.dineconnect.backend.user.respository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +41,12 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
             );
         }
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+            .map(user -> {
+                user.setRole(Role.fromString(user.getRole().name())); // Ensures enum is parsed safely
+                return user;
+            })
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
     }
 
     public String getCurrentUsername() {

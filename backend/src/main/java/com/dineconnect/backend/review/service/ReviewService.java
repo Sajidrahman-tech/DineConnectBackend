@@ -2,7 +2,6 @@ package com.dineconnect.backend.review.service;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.dineconnect.backend.restaurant.service.RestaurantServiceUtil;
@@ -23,7 +22,6 @@ public class ReviewService {
     private final CustomUserDetailsServiceImpl userDetailsService;
     private final RestaurantServiceUtil restaurantServiceUtil;
 
-    @Cacheable(value = "reviews", key = "#restaurantId")
     public List<ReviewResponse> getReviewsByRestaurantId(String restaurantId) {
         restaurantServiceUtil.checkIfRestaurantExists(restaurantId);
         return reviewRepository.findByRestaurantId(restaurantId)
@@ -51,7 +49,6 @@ public class ReviewService {
                 .build();
     }
 
-    @Cacheable(value = "overallReview", key = "#restaurantId")
     public OverallReview getOverallReview(String restaurantId) {
         List<Review> reviews = reviewRepository.findByRestaurantId(restaurantId)
                 .orElseThrow(() -> new RuntimeException("No reviews found for restaurant with ID: " + restaurantId));
